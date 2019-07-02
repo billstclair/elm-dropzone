@@ -1,12 +1,8 @@
 #Elm Dropzone
 
-Provides helpers to make it easy to add a "dropzone" into a webapp and pass the the dropped files onto the [FileReader library](https://github.com/simonh1000/file-reader) to read.
+** Elm 0.19 fork of [danyx23/elm-dropzone](https://github.com/danyx23/elm-dropzone) **
 
-The library does not yet have a dependency on FileReader because FileReader has not passed native review yet. At the moment using it with FileReader is the primary intended use case.
-
-A full example of how to use this library is provided in the examples folder. Please note that you have to clone the filereader library manually into the examples folder.
-
-There are 3 basic steps to get DropZone working in your application:
+Provides helpers to make it easy to add a "dropzone" into an elm webapp.
 
 ### Store the DropZone.Model as part of your model
 
@@ -37,11 +33,9 @@ update message model =
             ( { model -- Make sure to update the DropZone model
               | dropZone = DropZone.update (Drop files) model.dropZone
               , .. -- maybe store the files in your own model
+              , files = files
               }
-            , Cmd.batch <|
-                List.map (readTextFile << .blob) files
-              -- in this example the dropped files are all read
-              -- with FileReader.readTextFile
+            , Cmd.none
             )
         DropZoneMessage a ->
             -- These are the other DropZone actions that are not exposed,
@@ -69,7 +63,7 @@ dropZoneView : Model -> Html msg
 dropZoneView model =
     div
       ( (hoveringDependentStyles model.dropZoneModel)
-      :: dropZoneEventHandlers FileReader.parseDroppedFiles DropZoneMsg)
+      :: dropZoneEventHandlers jsonFileDecoder)
       []
 
 hoveringDependentStyles : DropZone.Model -> Html.Attribute msg
@@ -79,5 +73,8 @@ hoveringDependentStyles dropZoneModel =
   else
     style [( "border", "3px dashed steelblue")]
 ```
+
+Where `jsonFileDecoder` can translate the FileList json object. The Elm Json Decode Library ["oneOrMore"](https://package.elm-lang.org/packages/elm/json/latest/Json-Decode#oneOrMore) function has an example on how you could write a decoder for the FileList returned from drop event. Or see the example/....
+
 
 by Daniel Bachler, Simon Hampton

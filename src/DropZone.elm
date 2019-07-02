@@ -1,12 +1,9 @@
-module DropZone
-    exposing
-        ( Model
-        , DropZoneMessage(Drop)
-        , isHovering
-        , init
-        , update
-        , dropZoneEventHandlers
-        )
+module DropZone exposing
+    ( dropZoneEventHandlers
+    , DropZoneMessage(..)
+    , Model
+    , init, update, isHovering
+    )
 
 {-| This library makes it easier to use Html5 Drag/Drop events when you want
 to support dropping of files into a webpage.
@@ -34,8 +31,9 @@ to support dropping of files into a webpage.
 -}
 
 import Html exposing (Attribute)
-import Html.Events exposing (onWithOptions)
+import Html.Events exposing (custom)
 import Json.Decode as Json exposing (andThen, map)
+
 
 
 -- MODEL
@@ -47,9 +45,10 @@ states are Normal and Hovering.
 
     case hoverState of
         Normal ->
-          text "Drag files here"
+            text "Drag files here"
+
         Hovering ->
-          text "Yes, drop them now!"
+            text "Yes, drop them now!"
 
 -}
 type HoverState
@@ -142,7 +141,7 @@ extract the .dataTransfer.files content. The FileReader project
     view address model =
         div
             (dropZoneStyle model.dropZoneModel
-                :: dragDropEventHandlers (Json.value)
+                :: dragDropEventHandlers Json.value
             )
             [ renderImageOrPrompt model
             ]
@@ -163,16 +162,12 @@ dropZoneEventHandlers decoder =
 
 onDragFunctionIgnoreFiles : String -> msg -> Attribute msg
 onDragFunctionIgnoreFiles nativeEventName action =
-    onWithOptions nativeEventName
-        { stopPropagation = False, preventDefault = True }
-        (Json.succeed action)
+    custom nativeEventName (Json.succeed { message = action, preventDefault = True, stopPropagation = False })
 
 
-onDragFunctionDecodeFiles : String -> Json.Decoder (DropZoneMessage msg) -> Attribute (DropZoneMessage msg)
+onDragFunctionDecodeFiles : String -> Json.Decoder { message : DropZoneMessage msg, stopPropagation : Bool, preventDefault : Bool } -> Attribute (DropZoneMessage msg)
 onDragFunctionDecodeFiles nativeEventName decoder =
-    onWithOptions nativeEventName
-        { stopPropagation = True, preventDefault = True }
-        decoder
+    custom nativeEventName decoder
 
 
 onDragEnter : msg -> Attribute msg
@@ -192,4 +187,5 @@ onDragLeave =
 
 onDrop : Json.Decoder msg -> Attribute (DropZoneMessage msg)
 onDrop decoder =
-    onDragFunctionDecodeFiles "drop" (map (\userVal -> Drop userVal) decoder)
+    onDragFunctionDecodeFiles "drop"
+        (map (\userVal -> { message = Drop userVal, stopPropagation = True, preventDefault = True }) decoder)
