@@ -3,7 +3,7 @@
     "name": "proda-ai/elm-dropzone",
     "summary": "Elm 0.19 fork of github.com/danyx23/elm-dropzone drop zone convenience library",
     "license": "BSD-3-Clause",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "exposed-modules": [
         "DropZone"
     ],
